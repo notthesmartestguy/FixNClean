@@ -1,9 +1,9 @@
 @echo off
 CLS
 
-ECHO =====================
+ECHO =============================
 ECHO Running Fix and Clean
-ECHO =====================
+ECHO =============================
 
 :init
 setlocal DisableDelayedExpansion
@@ -19,7 +19,8 @@ NET FILE 1>NUL 2>NUL
 if '%errorlevel%' == '0' (goto gotPrivileges) else (goto getPrivileges)
 
 :getPrivileges
-if '%1'=='ELEV' (echo ELEV & shift /1 & goto gotPrivileges)
+if '%1'=='ELEV' (shift & goto gotPrivileges)
+
 ECHO.
 ECHO **************************************
 ECHO Invoking UAC for Privilege Escalation
@@ -31,7 +32,7 @@ ECHO For Each strArg in WScript.Arguments >> "%vbsGetPrivileges%"
 ECHO args = args ^& strArg ^& " "  >> "%vbsGetPrivileges%"
 ECHO Next >> "%vbsGetPrivileges%"
 
-if '%cmdInvoke%'=='1' goto InvokeCmd
+if '%cmdInvoke%'=='1' goto InvokeCmd 
 
 ECHO UAC.ShellExecute "!batchPath!", args, "", "runas", 1 >> "%vbsGetPrivileges%"
 goto ExecElevation
@@ -46,19 +47,19 @@ exit /B
 
 :gotPrivileges
 setlocal & cd /d %~dp0
-if '%1'=='ELEV' (del "%vbsGetPrivileges%" 1>nul 2>nul  &  shift /1)
+if '%1'=='ELEV' (del "%vbsGetPrivileges%" 1>nul 2>nul & shift)
 
 :Menu
 Set RunAll=0
 CLS
 ECHO =============================
-ECHO Fix and Clean v 3.5
+ECHO Fix and Clean
 ECHO =============================
 ECHO 1. Run All
 ECHO 2. Create Restore Point
 ECHO 3. Check Windows Image Health
 ECHO 4. Scan System Files
-ECHO 5. Reset Windows Update Services
+ECHO 5. Windows Update
 ECHO 6. Reset Windows Network Services
 ECHO 7. Cleanup (Temp Files, Recycle Bin, Download Folder)
 ECHO 8. Run Windows Defender
@@ -67,25 +68,26 @@ ECHO 10. Defragment All Hard Drives
 ECHO 11. Set Windows Power Settings
 ECHO 12. Refresh Windows Store
 ECHO 13. Update winget Software
-ECHO 14. Exit
-SET /P choice=Choose an option (1-14): 
+ECHO 14. Force Windows Update
+ECHO 15. Exit
+SET /P choice=Choose an option (1-15): 
 
 REM Process the user's choice
-IF "%choice%"=="1" goto RunAll
-IF "%choice%"=="2" goto RestorePoint
-IF "%choice%"=="3" goto DISM
-IF "%choice%"=="4" goto SFC
-IF "%choice%"=="5" goto ResetWindowsUpdate
-IF "%choice%"=="6" goto NetworkServicesReset
-IF "%choice%"=="7" goto CleanUp
-IF "%choice%"=="8" goto Defender
-IF "%choice%"=="9" goto CheckDisk
-IF "%choice%"=="10" goto Defragmentation
-IF "%choice%"=="11" goto Power
-IF "%choice%"=="12" goto store
-IF "%choice%"=="13" goto winget
-IF "%choice%"=="14" goto End
-goto Menu
+IF %choice%==1 goto RunAll
+IF %choice%==2 goto RestorePoint
+IF %choice%==3 goto DISM
+IF %choice%==4 goto SFC
+IF %choice%==5 goto ResetWindowsUpdate
+IF %choice%==6 goto NetworkServicesReset
+IF %choice%==7 goto CleanUp
+IF %choice%==8 goto Defender
+IF %choice%==9 goto CheckDisk
+IF %choice%==10 goto Defragmentation
+IF %choice%==11 goto Power
+IF %choice%==12 goto store
+IF %choice%==13 goto winget
+IF %choice%==14 goto ForceWindowsUpdate
+IF %choice%==15 goto End
 
 :RunAll
 ECHO Running all tasks sequentially...
@@ -99,7 +101,7 @@ ECHO =============================
 wmic.exe /Namespace:\\root\default Path SystemRestore Call CreateRestorePoint "MyRestorePoint", 100, 7
 ECHO Restore point done!
 IF %RunAll%==0 goto Menu
-goto DISM
+IF %RunAll%==1 goto DISM
 
 :DISM
 ECHO =============================
@@ -117,10 +119,9 @@ ECHO =============================
 ECHO Scanning System Files
 ECHO =============================
 SFC /scannow
-
 ECHO System files scanned!
 IF %RunAll%==0 goto Menu
-goto ResetWindowsUpdate
+IF %RunAll%==1 goto ResetWindowsUpdate
 
 :ResetWindowsUpdate
 ECHO =============================
@@ -128,10 +129,9 @@ ECHO Resetting Windows Update Services
 ECHO =============================
 net stop wuauserv
 net start wuauserv
-
 ECHO Windows update service reset!
 IF %RunAll%==0 goto Menu
-goto NetworkServicesReset
+IF %RunAll%==1 goto NetworkServicesReset
 
 :NetworkServicesReset
 ECHO =============================
@@ -150,8 +150,7 @@ ren %systemroot%\softwaredistribution softwaredistribution.bak
 ren %systemroot%\system32\catroot2 catroot2.bak
 net start bits
 net start wuauserv
-net start cryptsvc 
-
+net start cryptsvc
 ECHO Network services reset!
 IF %RunAll%==0 goto Menu
 goto CleanUp
@@ -162,30 +161,27 @@ ECHO Cleaning up (Temp Files, Recycle Bin, Download Folder)
 ECHO =============================
 ECHO Are you sure you want to perform cleanup?
 ECHO This will permanently delete files from:
-ECHO     Downloads
-ECHO     Temp Files
-ECHO     Chrome Cache
-ECHO     Recycle Bin
-
-SET /P cleanupChoice= (y/n): 
+ECHO 	Downloads
+ECHO 	Temp Files
+ECHO 	Chrome Cache
+ECHO 	Trash
+SET /P cleanupChoice=(y/n): 
 if /i "%cleanupChoice%"=="y" (
     cleanmgr.exe /AUTOCLEAN /verylowdisk
-    del /q /s /f %SystemRoot%\Temp\*
-    del /q /s /f %SystemRoot%\SoftwareDistribution\Download\*
-    del /q /s /f %USERPROFILE%\Downloads\*
-    del /q /s /f C:\Users\%USERNAME%\AppData\Local\Google\Chrome\User Data\Default\Cache\*
-    del /q /s /f %USERPROFILE%\AppData\Local\Temp\*
-    del /q /s /f %USERPROFILE%\AppData\Local\Microsoft\Windows\INetCache\*
-    del /q /s /f %USERPROFILE%\AppData\Local\Microsoft\Windows\Temporary Internet Files\*
-    del /q /s /f %USERPROFILE%\.Trash\*
-
+    del /q /s %SystemRoot%\Temp\*
+    del /q /s %SystemRoot%\SoftwareDistribution\Download\*
+    del /q /s %USERPROFILE%\Downloads\*
+    del /q /s %USERPROFILE%\AppData\Local\Google\Chrome\User Data\default\cache\*
+    del /q /s %USERPROFILE%\AppData\Local\Temp\*
+    del /q /s %USERPROFILE%\AppData\Local\Microsoft\Windows\INetCache\*
+    del /q /s %USERPROFILE%\AppData\Local\Microsoft\Windows\Temporary Internet Files\*
+    del /q /s %USERPROFILE%\.Trash\*
     ECHO Cleanup complete!
 ) else (
     ECHO Cleanup canceled!
 )
-
 IF %RunAll%==0 goto Menu
-goto Defender
+IF %RunAll%==1 goto Defender
 
 :Defender
 ECHO =============================
@@ -193,23 +189,76 @@ ECHO Running Windows Defender
 ECHO =============================
 "%ProgramFiles%\Windows Defender\MpCmdRun.exe" -SignatureUpdate
 "%ProgramFiles%\Windows Defender\MpCmdRun.exe" -Scan -1
-
 ECHO Windows Defender has been run!
 IF %RunAll%==0 goto Menu
-goto CheckDisk
+IF %RunAll%==1 goto CheckDisk
 
 :CheckDisk
 ECHO =============================
 ECHO Checking Disk
 ECHO =============================
 chkdsk /scan /perf
-
 ECHO CheckDisk run!
 IF %RunAll%==0 goto Menu
-goto Defragmentation
+IF %RunAll%==1 goto Defragmentation
 
 :Defragmentation
 ECHO =============================
 ECHO Defragmenting All Hard Drives
 ECHO =============================
-defrag /c
+defrag /c /o /u
+ECHO Defragmentation complete!
+IF %RunAll%==0 goto Menu
+IF %RunAll%==1 goto Power
+
+:Power
+ECHO =============================
+ECHO Setting Windows Power Settings
+ECHO =============================
+ECHO 1. Balanced Power
+ECHO 2. Ultimate Performance
+SET /P powerChoice=Choose a power setting (1-2): 
+IF %powerChoice%==1 (
+    powercfg /setactive 381b4222-f694-41f0-9685-ff5bb260df2e
+) ELSE (
+    powercfg /setactive e9a42b02-d5df-448d-aa00-03f14749eb61
+)
+ECHO Power settings applied!
+IF %RunAll%==0 goto Menu
+IF %RunAll%==1 goto store
+
+:store
+ECHO =============================
+ECHO Refresh Windows Store
+ECHO =============================
+wsreset
+ECHO Windows Store refreshed!
+IF %RunAll%==0 goto Menu
+IF %RunAll%==1 goto winget
+
+:winget
+ECHO =============================
+ECHO Update winget software
+ECHO =============================
+winget upgrade --all
+ECHO winget software updated!
+IF %RunAll%==0 goto Menu
+IF %RunAll%==1 goto ForceWindowsUpdate
+
+:ForceWindowsUpdate
+ECHO =============================
+ECHO Forcing Windows Update
+ECHO =============================
+net stop wuauserv
+net start wuauserv
+UsoClient StartScan
+UsoClient StartDownload
+UsoClient StartInstall
+ECHO Windows Update forced!
+IF %RunAll%==0 goto Menu
+IF %RunAll%==1 goto End
+
+:End
+ECHO System scan complete, please close this window and reboot.
+pause
+exit
