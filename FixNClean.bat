@@ -69,8 +69,9 @@ ECHO 11. Set Windows Power Settings
 ECHO 12. Refresh Windows Store
 ECHO 13. Update winget Software
 ECHO 14. Force Windows Update
-ECHO 15. Exit
-SET /P choice=Choose an option (1-15): 
+ECHO 15. Force Windows Store to Update All
+ECHO 16. Exit
+SET /P choice=Choose an option (1-16): 
 
 REM Process the user's choice
 IF %choice%==1 goto RunAll
@@ -86,8 +87,9 @@ IF %choice%==10 goto Defragmentation
 IF %choice%==11 goto Power
 IF %choice%==12 goto store
 IF %choice%==13 goto winget
-IF %choice%==14 goto ForceWindowsUpdate
-IF %choice%==15 goto End
+IF %choice%==14 goto WindowsUpdate
+IF %choice%==15 goto WindowsStoreUpdate
+IF %choice%==16 goto End
 
 :RunAll
 ECHO Running all tasks sequentially...
@@ -118,7 +120,9 @@ goto SFC
 ECHO =============================
 ECHO Scanning System Files
 ECHO =============================
+
 SFC /scannow
+
 ECHO System files scanned!
 IF %RunAll%==0 goto Menu
 IF %RunAll%==1 goto ResetWindowsUpdate
@@ -187,8 +191,10 @@ IF %RunAll%==1 goto Defender
 ECHO =============================
 ECHO Running Windows Defender
 ECHO =============================
+
 "%ProgramFiles%\Windows Defender\MpCmdRun.exe" -SignatureUpdate
 "%ProgramFiles%\Windows Defender\MpCmdRun.exe" -Scan -1
+
 ECHO Windows Defender has been run!
 IF %RunAll%==0 goto Menu
 IF %RunAll%==1 goto CheckDisk
@@ -197,7 +203,9 @@ IF %RunAll%==1 goto CheckDisk
 ECHO =============================
 ECHO Checking Disk
 ECHO =============================
+
 chkdsk /scan /perf
+
 ECHO CheckDisk run!
 IF %RunAll%==0 goto Menu
 IF %RunAll%==1 goto Defragmentation
@@ -206,7 +214,9 @@ IF %RunAll%==1 goto Defragmentation
 ECHO =============================
 ECHO Defragmenting All Hard Drives
 ECHO =============================
+
 defrag /c /o /u
+
 ECHO Defragmentation complete!
 IF %RunAll%==0 goto Menu
 IF %RunAll%==1 goto Power
@@ -231,7 +241,9 @@ IF %RunAll%==1 goto store
 ECHO =============================
 ECHO Refresh Windows Store
 ECHO =============================
+
 wsreset
+
 ECHO Windows Store refreshed!
 IF %RunAll%==0 goto Menu
 IF %RunAll%==1 goto winget
@@ -240,21 +252,25 @@ IF %RunAll%==1 goto winget
 ECHO =============================
 ECHO Update winget software
 ECHO =============================
+
 winget upgrade --all
+
 ECHO winget software updated!
 IF %RunAll%==0 goto Menu
 IF %RunAll%==1 goto ForceWindowsUpdate
 
 :ForceWindowsUpdate
 ECHO =============================
-ECHO Forcing Windows Update
+ECHO Windows Update
 ECHO =============================
+
 net stop wuauserv
 net start wuauserv
 UsoClient StartScan
 UsoClient StartDownload
 UsoClient StartInstall
-ECHO Windows Update forced!
+
+ECHO
 IF %RunAll%==0 goto Menu
 IF %RunAll%==1 goto End
 
