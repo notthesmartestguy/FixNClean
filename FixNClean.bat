@@ -4,6 +4,9 @@ CLS
 ECHO =============================
 ECHO Running Fix and Clean
 ECHO =============================
+ECHO FNC v3
+ECHO Big Changes, this version has a full menu system, debloat and much more
+
 
 :init
 setlocal DisableDelayedExpansion
@@ -54,6 +57,15 @@ Set RunAll=0
 CLS
 ECHO =============================
 ECHO Fix and Clean
+ECHO             _
+ECHO            / / 
+ECHO           /  \_/\
+ECHO           \   _ /
+ECHO           /  /
+ECHO          /  /
+ECHO         /  /
+ECHO        /  /
+ECHO       (__/
 ECHO =============================
 ECHO 1. Run All
 ECHO 2. Create Restore Point
@@ -70,7 +82,8 @@ ECHO 12. Refresh Windows Store
 ECHO 13. Update winget Software
 ECHO 14. Force Windows Update
 ECHO 15. Force Windows Store to Update All
-ECHO 16. Exit
+ECHO 16. Debloat apps
+ECHO 17. Exit
 SET /P choice=Choose an option (1-16): 
 
 REM Process the user's choice
@@ -89,7 +102,8 @@ IF %choice%==12 goto store
 IF %choice%==13 goto winget
 IF %choice%==14 goto WindowsUpdate
 IF %choice%==15 goto WindowsStoreUpdate
-IF %choice%==16 goto End
+IF %choice%==16 goto Debloat
+IF %choice%==17 goto End
 
 :RunAll
 ECHO Running all tasks sequentially...
@@ -275,6 +289,89 @@ IF %RunAll%==0 goto Menu
 IF %RunAll%==1 goto End
 
 :End
+
+:DeBloat
+ECHO =============================
+ECHO remove Bloatware
+ECHO =============================
+
+: Xbox Applications
+winget uninstall Microsoft.GamingApp_8wekyb3d8bbwe --accept-source-agreements --silent
+winget uninstall Microsoft.XboxApp_8wekyb3d8bbwe --accept-source-agreements --silent
+winget uninstall Microsoft.Xbox.TCUI_8wekyb3d8bbwe --accept-source-agreements --silent
+winget uninstall Microsoft.XboxSpeechToTextOverlay_8wekyb3d8bbwe --accept-source-agreements --silent
+winget uninstall Microsoft.XboxIdentityProvider_8wekyb3d8bbwe --accept-source-agreements --silent
+winget uninstall Microsoft.XboxGamingOverlay_8wekyb3d8bbwe --accept-source-agreements --silent
+winget uninstall Microsoft.XboxGameOverlay_8wekyb3d8bbwe --accept-source-agreements --silent
+
+: Groove Music
+winget uninstall Microsoft.ZuneMusic_8wekyb3d8bbwe --accept-source-agreements --silent
+
+: Feedback Hub
+winget uninstall Microsoft.WindowsFeedbackHub_8wekyb3d8bbwe --accept-source-agreements --silent
+
+: Microsoft-Tips...
+winget uninstall Microsoft.Getstarted_8wekyb3d8bbwe --accept-source-agreements --silent
+
+: 3D Viewer
+winget uninstall 9NBLGGH42THS --accept-source-agreements --silent
+
+: MS Solitaire
+winget uninstall Microsoft.MicrosoftSolitaireCollection_8wekyb3d8bbwe --accept-source-agreements --silent
+
+: Paint-3D...
+winget uninstall 9NBLGGH5FV99 --accept-source-agreements --silent
+
+: Weather 
+winget uninstall Microsoft.BingWeather_8wekyb3d8bbwe --accept-source-agreements --silent
+
+: People
+winget uninstall Microsoft.People_8wekyb3d8bbwe --accept-source-agreements --silent
+
+: MS Pay 
+winget uninstall Microsoft.Wallet_8wekyb3d8bbwe --accept-source-agreements --silent
+
+: MS Maps
+winget uninstall Microsoft.WindowsMaps_8wekyb3d8bbwe --accept-source-agreements --silent
+
+: Voice Recorder
+winget uninstall Microsoft.WindowsSoundRecorder_8wekyb3d8bbwe --accept-source-agreements --silent
+
+: Movies & TV
+winget uninstall Microsoft.ZuneVideo_8wekyb3d8bbwe --accept-source-agreements --silent
+
+: Mixed Reality-Portal
+winget uninstall Microsoft.MixedReality.Portal_8wekyb3d8bbwe --accept-source-agreements --silent
+
+: Sticky Notes...
+winget uninstall Microsoft.MicrosoftStickyNotes_8wekyb3d8bbwe --accept-source-agreements --silent
+
+: Get Help
+winget uninstall Microsoft.GetHelp_8wekyb3d8bbwe --accept-source-agreements --silent
+
+
+: Windows 11 Bloatware
+
+: Microsoft TO Do
+winget uninstall Microsoft.Todos_8wekyb3d8bbwe --accept-source-agreements --silent
+: Power Automate
+winget uninstall Microsoft.PowerAutomateDesktop_8wekyb3d8bbwe --accept-source-agreements --silent
+: Bing News
+winget uninstall Microsoft.BingNews_8wekyb3d8bbwe --accept-source-agreements --silent
+: Microsoft Family
+winget uninstall MicrosoftCorporationII.MicrosoftFamily_8wekyb3d8bbwe --accept-source-agreements --silent
+: Quick Assist
+winget uninstall MicrosoftCorporationII.QuickAssist_8wekyb3d8bbwe --accept-source-agreements --silent
+: Third-Party Preinstalled bloat
+winget uninstall disney+ --accept-source-agreements --silent
+winget uninstall Clipchamp.Clipchamp_yxz26nhyzhsrt --accept-source-agreements --silent
+
+
+ECHO
+IF %RunAll%==0 goto Menu
+IF %RunAll%==1 goto End
+
+
 ECHO System scan complete, please close this window and reboot.
 pause
 exit
